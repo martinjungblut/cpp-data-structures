@@ -16,6 +16,12 @@ public:
     this->defaultValue = defaultValue;
   }
 
+  ~Stack<T> () {
+    while (this->size() > 0) {
+      this->pop();
+    }
+  }
+
   T push(T target) {
     this->count++;
 
@@ -112,4 +118,18 @@ TEST_CASE("stack - pop yields default element if there are no elements left", "s
 
   REQUIRE(stack.pop() == 10);
   REQUIRE(stack.pop() == 10);
+}
+
+TEST_CASE("stack - destructor automatically pops all elements", "stack") {
+  Stack<int> *stack = new Stack<int>(0);
+
+  for (int i = 1; i <= 5; i++) {
+    stack->push(i);
+  }
+  REQUIRE(stack->size() == 5);
+
+  stack->~Stack();
+  REQUIRE(stack->size() == 0);
+
+  delete stack;
 }
