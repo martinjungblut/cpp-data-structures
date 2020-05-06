@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
+#include <stdexcept>
 #include "nodes.hpp"
 
 template <typename T>
@@ -18,6 +19,18 @@ public:
 
   unsigned int size() {
     return this->count;
+  }
+
+  T access(int targetIndex) {
+    SinglyLinkedNode<T>* current = this->head;
+    int index = 0;
+    while (current != NULL) {
+      if (index == targetIndex)
+	return current->data;
+      current = current->reference;
+      index++;
+    }
+    throw new std::out_of_range("Index out of range.");
   }
 
   int index(T element) {
@@ -97,6 +110,26 @@ TEST_CASE("singly linked list - prepend and append work consistently", "singlyli
   REQUIRE(list.index(10) == 1);
   REQUIRE(list.index(20) == 2);
   REQUIRE(list.index(40) == 3);
+}
 
-  REQUIRE(list.size() == 4);
+TEST_CASE("singly linked list - index returns index of first occurrence", "singlylinkedlist") {
+  SinglyLinkedList<int> list;
+
+  list.append(10);
+  list.append(10);
+
+  REQUIRE(list.index(10) == 0);
+}
+
+TEST_CASE("singly linked list - access", "singlylinkedlist") {
+  SinglyLinkedList<int> list;
+
+  REQUIRE_THROWS_AS(list.access(0), std::out_of_range*);
+  REQUIRE_THROWS_AS(list.access(1), std::out_of_range*);
+
+  list.append(1);
+  REQUIRE(list.access(0) == 1);
+
+  list.append(2);
+  REQUIRE(list.access(1) == 2);
 }
