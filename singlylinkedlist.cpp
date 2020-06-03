@@ -21,6 +21,35 @@ public:
     return this->count;
   }
 
+  T pop(int targetIndex) {
+    SinglyLinkedNode<T>* current = this->head;
+    SinglyLinkedNode<T>* previous = this->head;
+    int index = 0;
+
+    while (current != NULL)
+      if (index == targetIndex) {
+	T element = current->data;
+
+	if (current == this->head) {
+	  this->head = current->reference;
+	} else if (current == this->tail) {
+	  this->tail = previous;
+	  this->tail->reference = NULL;
+	} else {
+	  previous->reference = current->reference;
+	}
+
+	this->count--;
+	return element;
+      } else {
+	previous = current;
+	current = current->reference;
+	index++;
+      }
+
+    throw new std::out_of_range("Index out of range.");
+  }
+
   T access(int targetIndex) {
     SinglyLinkedNode<T>* current = this->head;
     int index = 0;
@@ -132,4 +161,54 @@ TEST_CASE("singly linked list - access", "singlylinkedlist") {
 
   list.append(2);
   REQUIRE(list.access(1) == 2);
+}
+
+TEST_CASE("singly linked list - pop", "singlylinkedlist") {
+  SinglyLinkedList<int> list;
+
+  // throw exceptions if empty
+  REQUIRE_THROWS_AS(list.pop(0), std::out_of_range*);
+  REQUIRE_THROWS_AS(list.pop(1), std::out_of_range*);
+
+  // pop from head
+  list.append(10);
+  list.append(20);
+  list.append(30);
+  REQUIRE(list.pop(0) == 10);
+  REQUIRE(list.size() == 2);
+  REQUIRE(list.index(10) == -1);
+
+  REQUIRE(list.pop(0) == 20);
+  REQUIRE(list.size() == 1);
+  REQUIRE(list.index(20) == -1);
+
+  REQUIRE(list.pop(0) == 30);
+  REQUIRE(list.size() == 0);
+  REQUIRE(list.index(30) == -1);
+
+  // pop from tail
+  list.append(10);
+  list.append(20);
+  list.append(30);
+  REQUIRE(list.pop(2) == 30);
+  REQUIRE(list.size() == 2);
+  REQUIRE(list.index(30) == -1);
+
+  REQUIRE(list.pop(1) == 20);
+  REQUIRE(list.size() == 1);
+  REQUIRE(list.index(30) == -1);
+
+  REQUIRE(list.pop(0) == 10);
+  REQUIRE(list.size() == 0);
+  REQUIRE(list.index(30) == -1);
+
+  // pop from middle
+  list.append(10);
+  list.append(20);
+  list.append(30);
+  REQUIRE(list.pop(1) == 20);
+  REQUIRE(list.size() == 2);
+  REQUIRE(list.index(20) == -1);
+  REQUIRE(list.index(10) == 0);
+  REQUIRE(list.index(30) == 1);
 }
