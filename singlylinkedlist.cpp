@@ -202,7 +202,7 @@ TEST_CASE("singly linked list - pop", "singlylinkedlist") {
   REQUIRE(list.size() == 0);
   REQUIRE(list.index(30) == -1);
 
-  // pop from middle
+  // pop from middle, then tail, then head
   list.append(10);
   list.append(20);
   list.append(30);
@@ -211,4 +211,13 @@ TEST_CASE("singly linked list - pop", "singlylinkedlist") {
   REQUIRE(list.index(20) == -1);
   REQUIRE(list.index(10) == 0);
   REQUIRE(list.index(30) == 1);
+
+  REQUIRE(list.pop(1) == 30);
+  REQUIRE(list.size() == 1);
+  REQUIRE(list.index(30) == -1);
+  REQUIRE(list.index(10) == 0);
+
+  REQUIRE(list.pop(0) == 10);
+  REQUIRE(list.size() == 0);
+  REQUIRE(list.index(10) == -1);
 }
