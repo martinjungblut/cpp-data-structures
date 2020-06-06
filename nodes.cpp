@@ -22,13 +22,8 @@ TEST_CASE("SinglyLinkedNode", "new and delete") {
   unsigned int newCalled = 0;
   unsigned int deleteCalled = 0;
 
-  SinglyLinkedNodeHooks::onNew = ([&]() {
-    newCalled++;
-  });
-
-  SinglyLinkedNodeHooks::onDelete = ([&]() {
-    deleteCalled++;
-  });
+  SinglyLinkedNodeHooks::onNew = [&]() { newCalled++; };
+  SinglyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
 
   REQUIRE(newCalled == 0);
   SinglyLinkedNode<int>* intNode = new SinglyLinkedNode<int>();

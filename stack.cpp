@@ -133,3 +133,40 @@ TEST_CASE("stack - destructor automatically pops all elements", "stack") {
 
   delete stack;
 }
+
+TEST_CASE("stack - memory allocation", "stack") {
+  unsigned int newCalled = 0;
+  unsigned int deleteCalled = 0;
+
+  SinglyLinkedNodeHooks::onNew = [&]() { newCalled++; };
+  SinglyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
+
+  Stack<int> *stack = new Stack<int>(0);
+  REQUIRE(newCalled == 0);
+  REQUIRE(deleteCalled == 0);
+
+  // pop on empty stack shouldn't trigger new/delete
+  stack->pop();
+  REQUIRE(newCalled == 0);
+  REQUIRE(deleteCalled == 0);
+
+  stack->push(10);
+  REQUIRE(newCalled == 1);
+  REQUIRE(deleteCalled == 0);
+
+  stack->push(20);
+  REQUIRE(newCalled == 2);
+  REQUIRE(deleteCalled == 0);
+
+  stack->peek();
+  REQUIRE(newCalled == 2);
+  REQUIRE(deleteCalled == 0);
+
+  stack->pop();
+  REQUIRE(newCalled == 2);
+  REQUIRE(deleteCalled == 1);
+
+  delete stack;
+  REQUIRE(newCalled == 2);
+  REQUIRE(deleteCalled == 2);
+}

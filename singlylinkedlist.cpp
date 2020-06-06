@@ -17,19 +17,23 @@ public:
     this->tail = NULL;
   }
 
+  ~SinglyLinkedList<T>() {
+    for (int i = this->count - 1; i >= 0; i--) {
+      this->pop(i);
+    }
+  }
+
   unsigned int size() {
     return this->count;
   }
 
   T pop(int targetIndex) {
-    SinglyLinkedNode<T>* current = this->head;
     SinglyLinkedNode<T>* previous = this->head;
+    SinglyLinkedNode<T>* current = this->head;
     int index = 0;
 
     while (current != NULL)
       if (index == targetIndex) {
-	T element = current->data;
-
 	if (current == this->head) {
 	  this->head = current->reference;
 	} else if (current == this->tail) {
@@ -39,6 +43,8 @@ public:
 	  previous->reference = current->reference;
 	}
 
+	T element = current->data;
+	delete current;
 	this->count--;
 	return element;
       } else {
@@ -220,4 +226,51 @@ TEST_CASE("singly linked list - pop", "singlylinkedlist") {
   REQUIRE(list.pop(0) == 10);
   REQUIRE(list.size() == 0);
   REQUIRE(list.index(10) == -1);
+}
+
+TEST_CASE("singly linked list - memory allocation", "singlylinkedlist") {
+  unsigned int newCalled = 0;
+  unsigned int deleteCalled = 0;
+
+  SinglyLinkedNodeHooks::onNew = [&]() { newCalled++; };
+  SinglyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
+
+  SinglyLinkedList<int>* list = new SinglyLinkedList<int>();
+  REQUIRE(newCalled == 0);
+  REQUIRE(deleteCalled == 0);
+
+  list->append(30);
+  list->append(40);
+  list->append(50);
+  REQUIRE(newCalled == 3);
+  REQUIRE(deleteCalled == 0);
+
+  list->prepend(20);
+  list->prepend(10);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 0);
+
+  list->index(10);
+  list->access(0);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 0);
+
+  // pop from middle: [10 20 30 40 50] -> [10 20 40 50]
+  list->pop(2);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 1);
+
+  // pop from head: [10 30 40 50] -> [30 40 50]
+  list->pop(0);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 2);
+
+  // pop from tail: [30 40 50] -> [30 40]
+  list->pop(2);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 3);
+
+  delete list;
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 5);
 }

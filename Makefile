@@ -1,7 +1,6 @@
 clean:
 	rm -f stack
 	rm -f singlylinkedlist
-	rm -f trackers
 	rm -f nodes
 
 stack:
