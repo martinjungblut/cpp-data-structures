@@ -28,29 +28,29 @@ public:
   }
 
   T pop(int targetIndex) {
-    SinglyLinkedNode<T>* previous = this->head;
     SinglyLinkedNode<T>* current = this->head;
+    SinglyLinkedNode<T>* previous = this->head;
     int index = 0;
 
     while (current != NULL)
       if (index == targetIndex) {
-	if (current == this->head) {
-	  this->head = current->reference;
-	} else if (current == this->tail) {
-	  this->tail = previous;
-	  this->tail->reference = NULL;
-	} else {
-	  previous->reference = current->reference;
-	}
+		if (current == this->head) {
+		  this->head = current->reference;
+		} else if (current == this->tail) {
+		  this->tail = previous;
+		  this->tail->reference = NULL;
+		} else {
+		  previous->reference = current->reference;
+		}
 
-	T element = current->data;
-	delete current;
-	this->count--;
-	return element;
+		T element = current->data;
+		delete current;
+		this->count--;
+		return element;
       } else {
-	previous = current;
-	current = current->reference;
-	index++;
+		previous = current;
+		current = current->reference;
+		index++;
       }
 
     throw new std::out_of_range("Index out of range.");
@@ -59,24 +59,30 @@ public:
   T access(int targetIndex) {
     SinglyLinkedNode<T>* current = this->head;
     int index = 0;
+
     while (current != NULL) {
       if (index == targetIndex)
-	return current->data;
+		return current->data;
+
       current = current->reference;
       index++;
     }
+
     throw new std::out_of_range("Index out of range.");
   }
 
   int index(T element) {
     SinglyLinkedNode<T>* current = this->head;
     int index = 0;
+
     while (current != NULL) {
       if (current->data == element)
-	return index;
+		return index;
+
       current = current->reference;
       index++;
     }
+
     return -1;
   }
 
@@ -86,6 +92,7 @@ public:
 
     if (this->tail != NULL)
       this->tail->reference = node;
+
     this->tail = node;
 
     if (this->head == NULL)
@@ -112,6 +119,7 @@ public:
 
 TEST_CASE("singly linked list - size / index / append", "singlylinkedlist") {
   SinglyLinkedList<int> list;
+
   REQUIRE(list.size() == 0);
 
   REQUIRE(list.index(1) == -1);

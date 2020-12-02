@@ -37,3 +37,38 @@ TEST_CASE("SinglyLinkedNode", "new and delete") {
   delete boolNode;
   REQUIRE(deleteCalled == 2);
 }
+
+TEST_CASE("DoublyLinkedNodeHooks", "reset") {
+  DoublyLinkedNodeHooks::reset();
+  REQUIRE(DoublyLinkedNodeHooks::onNew == nullptr);
+  REQUIRE(DoublyLinkedNodeHooks::onDelete == nullptr);
+
+  DoublyLinkedNodeHooks::onNew = [](){};
+  DoublyLinkedNodeHooks::onDelete = [](){};
+  REQUIRE(DoublyLinkedNodeHooks::onNew != nullptr);
+  REQUIRE(DoublyLinkedNodeHooks::onDelete != nullptr);
+
+  DoublyLinkedNodeHooks::reset();
+  REQUIRE(DoublyLinkedNodeHooks::onNew == nullptr);
+  REQUIRE(DoublyLinkedNodeHooks::onDelete == nullptr);
+}
+
+TEST_CASE("DoublyLinkedNode", "new and delete") {
+  unsigned int newCalled = 0;
+  unsigned int deleteCalled = 0;
+
+  DoublyLinkedNodeHooks::onNew = [&]() { newCalled++; };
+  DoublyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
+
+  REQUIRE(newCalled == 0);
+  DoublyLinkedNode<int>* intNode = new DoublyLinkedNode<int>();
+  REQUIRE(newCalled == 1);
+  DoublyLinkedNode<bool>* boolNode = new DoublyLinkedNode<bool>();
+  REQUIRE(newCalled == 2);
+
+  REQUIRE(deleteCalled == 0);
+  delete intNode;
+  REQUIRE(deleteCalled == 1);
+  delete boolNode;
+  REQUIRE(deleteCalled == 2);
+}
