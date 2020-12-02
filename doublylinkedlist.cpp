@@ -12,13 +12,37 @@ private:
 
 public:
   DoublyLinkedList<T>() {
-	this->head = NULL;
-	this->tail = NULL;
-	this->count = 0;
+    this->head = NULL;
+    this->tail = NULL;
+    this->count = 0;
+  }
+
+  void display(std::string message) {
+    DoublyLinkedNode<T>* node = this->head;
+
+    std::cout << "Message:" << message << std::endl;
+
+    if (this->head != NULL)
+      std::cout << "Head: " << *this->head << std::endl;
+
+    while (node != NULL) {
+      std::cout << "Node: " << *node << std::endl;
+      if (node->next == node) {
+        std::cout << "Cyclic reference found!" << std::endl;
+        break;
+      } else {
+        node = node->next;
+      }
+    }
+
+    if (this->tail != NULL)
+      std::cout << "Tail: " << *this->tail << std::endl;
+
+    std::cout << "" << std::endl;
   }
 
   unsigned int size() {
-	return this->count;
+    return this->count;
   }
 
   int index(T element) {
@@ -27,7 +51,7 @@ public:
 
     while (current != NULL) {
       if (current->data == element)
-		return index;
+        return index;
 
       current = current->next;
       index++;
@@ -36,37 +60,13 @@ public:
     return -1;
   }
 
-  void display(std::string message) {
-    DoublyLinkedNode<T>* node = this->head;
-
-	std::cout << "Message:" << message << std::endl;
-
-	if (this->head != NULL)
-	  std::cout << "Head: " << *this->head << std::endl;
-
-	while (node != NULL) {
-	  std::cout << "Node: " << *node << std::endl;
-	  if (node->next == node) {
-		std::cout << "Cyclic reference found!" << std::endl;
-		break;
-	  } else {
-		node = node->next;
-	  }
-	}
-
-	if (this->tail != NULL)
-	  std::cout << "Tail: " << *this->tail << std::endl;
-
-	std::cout << "" << std::endl;
-  }
-
   T access(int targetIndex) {
     DoublyLinkedNode<T>* current = this->head;
     int index = 0;
 
     while (current != NULL) {
-	  if (index == targetIndex)
-		return current->data;
+      if (index == targetIndex)
+        return current->data;
 
       current = current->next;
       index++;
@@ -78,15 +78,15 @@ public:
   T append(T element) {
     DoublyLinkedNode<T>* node = new DoublyLinkedNode<T>();
     node->data = element;
-	node->previous = this->tail;
+    node->previous = this->tail;
 
     if (this->head == NULL) {
       this->head = node;
-	}
+    }
 
     if (this->tail != NULL) {
       this->tail->next = node;
-	}
+    }
     this->tail = node;
 
     this->count++;
@@ -96,19 +96,19 @@ public:
   T prepend(T element) {
     DoublyLinkedNode<T>* node = new DoublyLinkedNode<T>();
     node->data = element;
-	node->next = this->head;
+    node->next = this->head;
 
-	if (this->head != NULL) {
-	  this->head->previous = node;
-	}
-	this->head = node;
+    if (this->head != NULL) {
+      this->head->previous = node;
+    }
+    this->head = node;
 
-	if (this->tail == NULL) {
-	  this->tail = node;
-	}
+    if (this->tail == NULL) {
+      this->tail = node;
+    }
 
-	this->count++;
-	return node->data;
+    this->count++;
+    return node->data;
   }
 
   T pop(int targetIndex) {
@@ -117,33 +117,33 @@ public:
 
     while (current != NULL) {
       if (index == targetIndex) { 
-		if (current == this->head) {
-		  if (this->head == this->tail)
-			this->tail = this->tail->next;
+        if (current == this->head) {
+          if (this->head == this->tail)
+            this->tail = this->tail->next;
 
-		  this->head = this->head->next;
+          this->head = this->head->next;
 
-		  if (this->head != NULL)
-			this->head->previous = NULL;
-		} else if (current == this->tail) {
-		  this->tail = this->tail->previous;
+          if (this->head != NULL)
+            this->head->previous = NULL;
+        } else if (current == this->tail) {
+          this->tail = this->tail->previous;
 
-		  if (this->tail != NULL)
-			this->tail->next = NULL;
-		} else {
-		  current->previous->next = current->next;
-		  current->next->previous = current->previous;
-		}
+          if (this->tail != NULL)
+            this->tail->next = NULL;
+        } else {
+          current->previous->next = current->next;
+          current->next->previous = current->previous;
+        }
 
-		T element = current->data;
-		delete current;
-		this->count--;
-		return element;
+        T element = current->data;
+        delete current;
+        this->count--;
+        return element;
       } else {
-		current = current->next;
-		index++;
+        current = current->next;
+        index++;
       }
-	}
+    }
 
     throw new std::out_of_range("Index out of range.");
   }
@@ -197,7 +197,7 @@ TEST_CASE("doubly linked list - index returns index of first occurrence", "doubl
   REQUIRE(list.index(10) == 0);
 }
 
-TEST_CASE("singly linked list - access", "singlylinkedlist") {
+TEST_CASE("doubly linked list - access", "doublylinkedlist") {
   DoublyLinkedList<int> list;
 
   REQUIRE_THROWS_AS(list.access(0), std::out_of_range*);

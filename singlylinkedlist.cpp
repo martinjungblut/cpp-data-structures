@@ -34,23 +34,23 @@ public:
 
     while (current != NULL)
       if (index == targetIndex) {
-		if (current == this->head) {
-		  this->head = current->reference;
-		} else if (current == this->tail) {
-		  this->tail = previous;
-		  this->tail->reference = NULL;
-		} else {
-		  previous->reference = current->reference;
-		}
+        if (current == this->head) {
+          this->head = current->reference;
+        } else if (current == this->tail) {
+          this->tail = previous;
+          this->tail->reference = NULL;
+        } else {
+          previous->reference = current->reference;
+        }
 
-		T element = current->data;
-		delete current;
-		this->count--;
-		return element;
+        T element = current->data;
+        delete current;
+        this->count--;
+        return element;
       } else {
-		previous = current;
-		current = current->reference;
-		index++;
+        previous = current;
+        current = current->reference;
+        index++;
       }
 
     throw new std::out_of_range("Index out of range.");
@@ -62,7 +62,7 @@ public:
 
     while (current != NULL) {
       if (index == targetIndex)
-		return current->data;
+        return current->data;
 
       current = current->reference;
       index++;
@@ -77,7 +77,7 @@ public:
 
     while (current != NULL) {
       if (current->data == element)
-		return index;
+        return index;
 
       current = current->reference;
       index++;
