@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
+#include <functional>
 #include "nodes.hpp"
 
 template <typename T>
@@ -10,6 +11,25 @@ private:
   DoublyLinkedNode<T>* tail;
   unsigned int count;
 
+  bool iterate(std::function<bool(unsigned int, DoublyLinkedNode<T>*, unsigned int, DoublyLinkedNode<T>*)> action) {
+    DoublyLinkedNode<T> *lnode = this->head, *rnode = this->tail;
+    unsigned int ilnode = 0, irnode = this->size() - 1;
+
+    while (lnode != NULL && rnode != NULL) {
+      if (action(ilnode, lnode, irnode, rnode))
+        return true;
+
+      if (lnode == rnode) {
+        break;
+      } else {
+        lnode = lnode->next, ilnode++;
+        rnode = rnode->previous, irnode--;
+      }
+    }
+
+    return false;
+  }
+
 public:
   DoublyLinkedList<T>() {
     this->head = NULL;
@@ -17,10 +37,16 @@ public:
     this->count = 0;
   }
 
+  ~DoublyLinkedList<T>() {
+    for (int i = this->size() - 1; i >= 0; i--) {
+      this->pop(i);
+    }
+  }
+
   void display(std::string message) {
     DoublyLinkedNode<T>* node = this->head;
 
-    std::cout << "Message:" << message << std::endl;
+    std::cout << "Message: " << message << std::endl;
 
     if (this->head != NULL)
       std::cout << "Head: " << *this->head << std::endl;
@@ -46,33 +72,45 @@ public:
   }
 
   int index(T element) {
-    DoublyLinkedNode<T>* current = this->head;
-    int index = 0;
+    unsigned int index = 0;
 
-    while (current != NULL) {
-      if (current->data == element)
-        return index;
+    bool assigned = this->iterate([&index, element](unsigned int ia, DoublyLinkedNode<T>* a, unsigned int ib, DoublyLinkedNode<T>* b) {
+      if (a->data == element) {
+        index = ia;
+        return true;
+      } else if (b->data == element) {
+        index = ib;
+        return true;
+      } else {
+        return false;
+      }
+    });
 
-      current = current->next;
-      index++;
-    }
-
-    return -1;
+    if (assigned)
+      return index;
+    else
+      return -1;
   }
 
-  T access(int targetIndex) {
-    DoublyLinkedNode<T>* current = this->head;
-    int index = 0;
+  T access(unsigned int index) {
+    T result;
 
-    while (current != NULL) {
-      if (index == targetIndex)
-        return current->data;
+    bool assigned = this->iterate([index, &result](unsigned int ia, DoublyLinkedNode<T>* a, unsigned int ib, DoublyLinkedNode<T>* b) {
+      if (ia == index) {
+        result = a->data;
+        return true;
+      } else if (ib == index) {
+        result = b->data;
+        return true;
+      } else {
+        return false;
+      }
+    });
 
-      current = current->next;
-      index++;
-    }
-
-    throw new std::out_of_range("Index out of range.");
+    if (assigned)
+      return result;
+    else
+      throw new std::out_of_range("Index out of range.");
   }
 
   T append(T element) {
@@ -111,46 +149,46 @@ public:
     return node->data;
   }
 
-  T pop(int targetIndex) {
-    DoublyLinkedNode<T>* current = this->head;
-    int index = 0;
+  T pop(unsigned int targetIndex) {
+    DoublyLinkedNode<T>* target = NULL;
 
-    while (current != NULL) {
-      if (index == targetIndex) { 
-        if (current == this->head) {
-          if (this->head == this->tail)
-            this->tail = this->tail->next;
-
-          this->head = this->head->next;
-
-          if (this->head != NULL)
-            this->head->previous = NULL;
-        } else if (current == this->tail) {
-          this->tail = this->tail->previous;
-
-          if (this->tail != NULL)
-            this->tail->next = NULL;
-        } else {
-          current->previous->next = current->next;
-          current->next->previous = current->previous;
-        }
-
-        T element = current->data;
-        delete current;
-        this->count--;
-        return element;
+    bool found = this->iterate([targetIndex, &target](unsigned int ia, DoublyLinkedNode<T>* a, unsigned int ib, DoublyLinkedNode<T>* b) {
+      if (ia == targetIndex) {
+        target = a;
+        return true;
+      } else if (ib == targetIndex) {
+        target = b;
+        return true;
       } else {
-        current = current->next;
-        index++;
+        return false;
       }
+    });
+
+    if (found) {
+      if (this->size() == 1) {
+        this->head = NULL, this->tail = NULL;
+      } else if (target == this->head) {
+        this->head = this->head->next;
+        this->head->previous = NULL;
+      } else if (target == this->tail) {
+        this->tail = this->tail->previous;
+        this->tail->next = NULL;
+      } else {
+        target->previous->next = target->next;
+        target->next->previous = target->previous;
+      }
+
+      T data = target->data;
+      delete target;
+      this->count--;
+      return data;
+    } else {
+      throw new std::out_of_range("Index out of range.");
     }
-
-    throw new std::out_of_range("Index out of range.");
   }
-
 };
 
-TEST_CASE("doubly linked list - size / index / append", "doublylinkedlist") {
+TEST_CASE("doubly linked list - size / index / append", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
   REQUIRE(list.size() == 0);
@@ -166,7 +204,7 @@ TEST_CASE("doubly linked list - size / index / append", "doublylinkedlist") {
   REQUIRE(list.index(2) == 1);
 }
 
-TEST_CASE("doubly linked list - prepend and append", "doublylinkedlist") {
+TEST_CASE("doubly linked list - prepend and append", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
   REQUIRE(list.prepend(10) == 10);
@@ -188,7 +226,7 @@ TEST_CASE("doubly linked list - prepend and append", "doublylinkedlist") {
   REQUIRE(list.index(40) == 3);
 }
 
-TEST_CASE("doubly linked list - index returns index of first occurrence", "doublylinkedlist") {
+TEST_CASE("doubly linked list - index returns index of first occurrence", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
   list.append(10);
@@ -197,7 +235,7 @@ TEST_CASE("doubly linked list - index returns index of first occurrence", "doubl
   REQUIRE(list.index(10) == 0);
 }
 
-TEST_CASE("doubly linked list - access", "doublylinkedlist") {
+TEST_CASE("doubly linked list - access", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
   REQUIRE_THROWS_AS(list.access(0), std::out_of_range*);
@@ -210,7 +248,7 @@ TEST_CASE("doubly linked list - access", "doublylinkedlist") {
   REQUIRE(list.access(1) == 2);
 }
 
-TEST_CASE("doubly linked list - pop", "doublylinkedlist") {
+TEST_CASE("doubly linked list - pop", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
   // throw exceptions if empty
@@ -310,4 +348,51 @@ TEST_CASE("doubly linked list - pop", "doublylinkedlist") {
   list.append(3);
   REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
   REQUIRE(list.size() == 3);
+}
+
+TEST_CASE("doubly linked list - memory allocation", "[doublylinkedlist]") {
+  unsigned int newCalled = 0;
+  unsigned int deleteCalled = 0;
+
+  DoublyLinkedNodeHooks::onNew = [&]() { newCalled++; };
+  DoublyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
+
+  DoublyLinkedList<int>* list = new DoublyLinkedList<int>();
+  REQUIRE(newCalled == 0);
+  REQUIRE(deleteCalled == 0);
+
+  list->append(30);
+  list->append(40);
+  list->append(50);
+  REQUIRE(newCalled == 3);
+  REQUIRE(deleteCalled == 0);
+
+  list->prepend(20);
+  list->prepend(10);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 0);
+
+  list->index(10);
+  list->access(0);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 0);
+
+  // pop from middle: [10 20 30 40 50] -> [10 20 40 50]
+  list->pop(2);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 1);
+
+  // pop from head: [10 30 40 50] -> [30 40 50]
+  list->pop(0);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 2);
+
+  // pop from tail: [30 40 50] -> [30 40]
+  list->pop(2);
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 3);
+
+  delete list;
+  REQUIRE(newCalled == 5);
+  REQUIRE(deleteCalled == 5);
 }
