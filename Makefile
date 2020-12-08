@@ -5,13 +5,13 @@ clean:
 	rm -f nodes
 
 stack:
-	clang++ -std=c++17 stack.cpp -o stack && ./stack
+	clear && make clean && clang++ -std=c++17 stack.cpp -o stack && ./stack -s --reporter=junit
 
 singlylinkedlist:
-	clang++ -std=c++17 singlylinkedlist.cpp -o singlylinkedlist && ./singlylinkedlist
+	clear && make clean && clang++ -std=c++17 singlylinkedlist.cpp -o singlylinkedlist && ./singlylinkedlist -s --reporter=junit
 
 doublylinkedlist:
-	clang++ -std=c++17 doublylinkedlist.cpp -o doublylinkedlist && ./doublylinkedlist
+	clear && make clean && clang++ -std=c++17 doublylinkedlist.cpp -o doublylinkedlist && ./doublylinkedlist -s --reporter=junit
 
 nodes:
-	clang++ -std=c++17 nodes.cpp -o nodes && ./nodes
+	clear && make clean && clang++ -std=c++17 nodes.cpp -o nodes && ./nodes -s --reporter=junit

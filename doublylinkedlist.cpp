@@ -43,30 +43,6 @@ public:
     }
   }
 
-  void display(std::string message) {
-    DoublyLinkedNode<T>* node = this->head;
-
-    std::cout << "Message: " << message << std::endl;
-
-    if (this->head != NULL)
-      std::cout << "Head: " << *this->head << std::endl;
-
-    while (node != NULL) {
-      std::cout << "Node: " << *node << std::endl;
-      if (node->next == node) {
-        std::cout << "Cyclic reference found!" << std::endl;
-        break;
-      } else {
-        node = node->next;
-      }
-    }
-
-    if (this->tail != NULL)
-      std::cout << "Tail: " << *this->tail << std::endl;
-
-    std::cout << "" << std::endl;
-  }
-
   unsigned int size() {
     return this->count;
   }
@@ -188,211 +164,250 @@ public:
   }
 };
 
-TEST_CASE("doubly linked list - size / index / append", "[doublylinkedlist]") {
+TEST_CASE("common operations", "[doublylinkedlist]") {
   DoublyLinkedList<int> list;
 
-  REQUIRE(list.size() == 0);
-  REQUIRE(list.index(1) == -1);
-  REQUIRE(list.index(2) == -1);
+  SECTION("size / index/ append") {
+    REQUIRE(list.size() == 0);
+    REQUIRE(list.index(1) == -1);
+    REQUIRE(list.index(2) == -1);
 
-  REQUIRE(list.append(1) == 1);
-  REQUIRE(list.size() == 1);
-  REQUIRE(list.append(2) == 2);
-  REQUIRE(list.size() == 2);
+    REQUIRE(list.append(1) == 1);
+    REQUIRE(list.size() == 1);
+    REQUIRE(list.append(2) == 2);
+    REQUIRE(list.size() == 2);
 
-  REQUIRE(list.index(1) == 0);
-  REQUIRE(list.index(2) == 1);
+    REQUIRE(list.index(1) == 0);
+    REQUIRE(list.index(2) == 1);
+  }
+
+  SECTION("prepend / append") {
+    REQUIRE(list.prepend(10) == 10);
+    REQUIRE(list.index(10) == 0);
+
+    REQUIRE(list.append(20) == 20);
+    REQUIRE(list.index(10) == 0);
+    REQUIRE(list.index(20) == 1);
+
+    REQUIRE(list.prepend(30) == 30);
+    REQUIRE(list.index(30) == 0);
+    REQUIRE(list.index(10) == 1);
+    REQUIRE(list.index(20) == 2);
+
+    REQUIRE(list.append(40) == 40);
+    REQUIRE(list.index(30) == 0);
+    REQUIRE(list.index(10) == 1);
+    REQUIRE(list.index(20) == 2);
+    REQUIRE(list.index(40) == 3);
+  }
+
+  SECTION("index returns index of first occurrence") {
+    list.append(10);
+    list.append(10);
+
+    REQUIRE(list.index(10) == 0);
+  }
+
+  SECTION("access") {
+    REQUIRE_THROWS_AS(list.access(0), std::out_of_range*);
+    REQUIRE_THROWS_AS(list.access(1), std::out_of_range*);
+
+    list.append(1);
+    REQUIRE(list.access(0) == 1);
+
+    list.append(2);
+    REQUIRE(list.access(1) == 2);
+  }
+
+  SECTION("pop") {
+    SECTION("throw exceptions if empty") {
+      REQUIRE_THROWS_AS(list.pop(0), std::out_of_range*);
+      REQUIRE_THROWS_AS(list.pop(1), std::out_of_range*);
+      REQUIRE_THROWS_AS(list.pop(2), std::out_of_range*);
+    }
+
+    SECTION("from head") {
+      list.append(10);
+      list.append(20);
+      list.append(30);
+      REQUIRE(list.pop(0) == 10);
+      REQUIRE(list.size() == 2);
+      REQUIRE(list.index(10) == -1);
+
+      REQUIRE(list.pop(0) == 20);
+      REQUIRE(list.size() == 1);
+      REQUIRE(list.index(20) == -1);
+
+      REQUIRE(list.pop(0) == 30);
+      REQUIRE(list.size() == 0);
+      REQUIRE(list.index(30) == -1);
+    }
+
+    SECTION("from tail") {
+      list.append(10);
+      list.append(20);
+      list.append(30);
+      REQUIRE(list.pop(2) == 30);
+      REQUIRE(list.size() == 2);
+      REQUIRE(list.index(30) == -1);
+
+      REQUIRE(list.pop(1) == 20);
+      REQUIRE(list.size() == 1);
+      REQUIRE(list.index(30) == -1);
+
+      REQUIRE(list.pop(0) == 10);
+      REQUIRE(list.size() == 0);
+      REQUIRE(list.index(30) == -1);
+    }
+
+    SECTION("from middle, then tail, then head") {
+      list.append(10);
+      list.append(20);
+      list.append(30);
+      REQUIRE(list.pop(1) == 20);
+      REQUIRE(list.size() == 2);
+      REQUIRE(list.index(20) == -1);
+      REQUIRE(list.index(10) == 0);
+      REQUIRE(list.index(30) == 1);
+
+      REQUIRE(list.pop(1) == 30);
+      REQUIRE(list.size() == 1);
+      REQUIRE(list.index(30) == -1);
+      REQUIRE(list.index(10) == 0);
+
+      REQUIRE(list.pop(0) == 10);
+      REQUIRE(list.size() == 0);
+      REQUIRE(list.index(10) == -1);
+    }
+
+    SECTION("from middle, then tail, then tail, then head") {
+      list.append(10);
+      list.append(20);
+      list.append(30);
+      list.append(40);
+      REQUIRE(list.pop(1) == 20);
+      REQUIRE(list.size() == 3);
+      REQUIRE(list.index(20) == -1);
+      REQUIRE(list.index(10) == 0);
+      REQUIRE(list.index(30) == 1);
+      REQUIRE(list.index(40) == 2);
+
+      REQUIRE(list.pop(2) == 40);
+      REQUIRE(list.size() == 2);
+      REQUIRE(list.index(40) == -1);
+      REQUIRE(list.index(10) == 0);
+      REQUIRE(list.index(30) == 1);
+
+      REQUIRE(list.pop(1) == 30);
+      REQUIRE(list.size() == 1);
+      REQUIRE(list.index(30) == -1);
+      REQUIRE(list.index(10) == 0);
+
+      REQUIRE(list.pop(0) == 10);
+      REQUIRE(list.size() == 0);
+      REQUIRE(list.index(10) == -1);
+    }
+
+    SECTION("non-existing element from list with 1, 2 and 3 elements") {
+      list.append(1);
+      REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
+      REQUIRE(list.size() == 1);
+
+      list.append(2);
+      REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
+      REQUIRE(list.size() == 2);
+
+      list.append(3);
+      REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
+      REQUIRE(list.size() == 3);
+    }
+  }
 }
 
-TEST_CASE("doubly linked list - prepend and append", "[doublylinkedlist]") {
-  DoublyLinkedList<int> list;
-
-  REQUIRE(list.prepend(10) == 10);
-  REQUIRE(list.index(10) == 0);
-
-  REQUIRE(list.append(20) == 20);
-  REQUIRE(list.index(10) == 0);
-  REQUIRE(list.index(20) == 1);
-
-  REQUIRE(list.prepend(30) == 30);
-  REQUIRE(list.index(30) == 0);
-  REQUIRE(list.index(10) == 1);
-  REQUIRE(list.index(20) == 2);
-
-  REQUIRE(list.append(40) == 40);
-  REQUIRE(list.index(30) == 0);
-  REQUIRE(list.index(10) == 1);
-  REQUIRE(list.index(20) == 2);
-  REQUIRE(list.index(40) == 3);
-}
-
-TEST_CASE("doubly linked list - index returns index of first occurrence", "[doublylinkedlist]") {
-  DoublyLinkedList<int> list;
-
-  list.append(10);
-  list.append(10);
-
-  REQUIRE(list.index(10) == 0);
-}
-
-TEST_CASE("doubly linked list - access", "[doublylinkedlist]") {
-  DoublyLinkedList<int> list;
-
-  REQUIRE_THROWS_AS(list.access(0), std::out_of_range*);
-  REQUIRE_THROWS_AS(list.access(1), std::out_of_range*);
-
-  list.append(1);
-  REQUIRE(list.access(0) == 1);
-
-  list.append(2);
-  REQUIRE(list.access(1) == 2);
-}
-
-TEST_CASE("doubly linked list - pop", "[doublylinkedlist]") {
-  DoublyLinkedList<int> list;
-
-  // throw exceptions if empty
-  REQUIRE_THROWS_AS(list.pop(0), std::out_of_range*);
-  REQUIRE_THROWS_AS(list.pop(1), std::out_of_range*);
-  REQUIRE_THROWS_AS(list.pop(2), std::out_of_range*);
-
-  // pop from head
-  list.append(10);
-  list.append(20);
-  list.append(30);
-  REQUIRE(list.pop(0) == 10);
-  REQUIRE(list.size() == 2);
-  REQUIRE(list.index(10) == -1);
-
-  REQUIRE(list.pop(0) == 20);
-  REQUIRE(list.size() == 1);
-  REQUIRE(list.index(20) == -1);
-
-  REQUIRE(list.pop(0) == 30);
-  REQUIRE(list.size() == 0);
-  REQUIRE(list.index(30) == -1);
-
-  // pop from tail
-  list.append(10);
-  list.append(20);
-  list.append(30);
-  REQUIRE(list.pop(2) == 30);
-  REQUIRE(list.size() == 2);
-  REQUIRE(list.index(30) == -1);
-
-  REQUIRE(list.pop(1) == 20);
-  REQUIRE(list.size() == 1);
-  REQUIRE(list.index(30) == -1);
-
-  REQUIRE(list.pop(0) == 10);
-  REQUIRE(list.size() == 0);
-  REQUIRE(list.index(30) == -1);
-
-  // pop from middle, then tail, then head
-  list.append(10);
-  list.append(20);
-  list.append(30);
-  REQUIRE(list.pop(1) == 20);
-  REQUIRE(list.size() == 2);
-  REQUIRE(list.index(20) == -1);
-  REQUIRE(list.index(10) == 0);
-  REQUIRE(list.index(30) == 1);
-
-  REQUIRE(list.pop(1) == 30);
-  REQUIRE(list.size() == 1);
-  REQUIRE(list.index(30) == -1);
-  REQUIRE(list.index(10) == 0);
-
-  REQUIRE(list.pop(0) == 10);
-  REQUIRE(list.size() == 0);
-  REQUIRE(list.index(10) == -1);
-
-  // pop from middle, then tail, then tail, then head
-  list.append(10);
-  list.append(20);
-  list.append(30);
-  list.append(40);
-  REQUIRE(list.pop(1) == 20);
-  REQUIRE(list.size() == 3);
-  REQUIRE(list.index(20) == -1);
-  REQUIRE(list.index(10) == 0);
-  REQUIRE(list.index(30) == 1);
-  REQUIRE(list.index(40) == 2);
-
-  REQUIRE(list.pop(2) == 40);
-  REQUIRE(list.size() == 2);
-  REQUIRE(list.index(40) == -1);
-  REQUIRE(list.index(10) == 0);
-  REQUIRE(list.index(30) == 1);
-
-  REQUIRE(list.pop(1) == 30);
-  REQUIRE(list.size() == 1);
-  REQUIRE(list.index(30) == -1);
-  REQUIRE(list.index(10) == 0);
-
-  REQUIRE(list.pop(0) == 10);
-  REQUIRE(list.size() == 0);
-  REQUIRE(list.index(10) == -1);
-
-  // pop non-existing element from list with 1, 2 and 3 elements
-  REQUIRE(list.size() == 0);
-
-  list.append(1);
-  REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
-  REQUIRE(list.size() == 1);
-
-  list.append(2);
-  REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
-  REQUIRE(list.size() == 2);
-
-  list.append(3);
-  REQUIRE_THROWS_AS(list.pop(10), std::out_of_range*);
-  REQUIRE(list.size() == 3);
-}
-
-TEST_CASE("doubly linked list - memory allocation", "[doublylinkedlist]") {
-  unsigned int newCalled = 0;
-  unsigned int deleteCalled = 0;
-
+TEST_CASE("memory allocation", "[doublylinkedlist]") {
+  unsigned int newCalled = 0, deleteCalled = 0;
   DoublyLinkedNodeHooks::onNew = [&]() { newCalled++; };
   DoublyLinkedNodeHooks::onDelete = [&]() { deleteCalled++; };
-
-  DoublyLinkedList<int>* list = new DoublyLinkedList<int>();
   REQUIRE(newCalled == 0);
   REQUIRE(deleteCalled == 0);
 
-  list->append(30);
-  list->append(40);
-  list->append(50);
-  REQUIRE(newCalled == 3);
-  REQUIRE(deleteCalled == 0);
+  SECTION("heap allocated") {
+    DoublyLinkedList<int>* list = new DoublyLinkedList<int>();
 
-  list->prepend(20);
-  list->prepend(10);
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 0);
+    list->append(30);
+    list->append(40);
+    list->append(50);
+    REQUIRE(newCalled == 3);
+    REQUIRE(deleteCalled == 0);
 
-  list->index(10);
-  list->access(0);
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 0);
+    list->prepend(20);
+    list->prepend(10);
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 0);
 
-  // pop from middle: [10 20 30 40 50] -> [10 20 40 50]
-  list->pop(2);
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 1);
+    list->index(10);
+    list->access(0);
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 0);
 
-  // pop from head: [10 30 40 50] -> [30 40 50]
-  list->pop(0);
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 2);
+    // pop from middle: [10 20 30 40 50] -> [10 20 40 50]
+    list->pop(2);
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 1);
 
-  // pop from tail: [30 40 50] -> [30 40]
-  list->pop(2);
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 3);
+    // pop from head: [10 30 40 50] -> [30 40 50]
+    list->pop(0);
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 2);
 
-  delete list;
-  REQUIRE(newCalled == 5);
-  REQUIRE(deleteCalled == 5);
+    // pop from tail: [30 40 50] -> [30 40]
+    list->pop(2);
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 3);
+
+    delete list;
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 5);
+  }
+
+  SECTION("stack allocated") {
+    std::function<void()> callable = [&newCalled, &deleteCalled]() {
+      DoublyLinkedList<int> list = DoublyLinkedList<int>();
+
+      list.append(30);
+      list.append(40);
+      list.append(50);
+      REQUIRE(newCalled == 3);
+      REQUIRE(deleteCalled == 0);
+
+      list.prepend(20);
+      list.prepend(10);
+      REQUIRE(newCalled == 5);
+      REQUIRE(deleteCalled == 0);
+
+      list.index(10);
+      list.access(0);
+      REQUIRE(newCalled == 5);
+      REQUIRE(deleteCalled == 0);
+
+      // pop from middle: [10 20 30 40 50] -> [10 20 40 50]
+      list.pop(2);
+      REQUIRE(newCalled == 5);
+      REQUIRE(deleteCalled == 1);
+
+      // pop from head: [10 30 40 50] -> [30 40 50]
+      list.pop(0);
+      REQUIRE(newCalled == 5);
+      REQUIRE(deleteCalled == 2);
+
+      // pop from tail: [30 40 50] -> [30 40]
+      list.pop(2);
+      REQUIRE(newCalled == 5);
+      REQUIRE(deleteCalled == 3);
+    };
+
+    callable();
+    REQUIRE(newCalled == 5);
+    REQUIRE(deleteCalled == 5);
+  }
 }
