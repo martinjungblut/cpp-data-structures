@@ -7,8 +7,7 @@
 template <typename T>
 class DoublyLinkedList {
 private:
-  DoublyLinkedNode<T>* head;
-  DoublyLinkedNode<T>* tail;
+  DoublyLinkedNode<T> *head, *tail;
   unsigned int count;
 
   bool iterate(std::function<bool(unsigned int, DoublyLinkedNode<T>*, unsigned int, DoublyLinkedNode<T>*)> action) {
@@ -32,15 +31,13 @@ private:
 
 public:
   DoublyLinkedList<T>() {
-    this->head = NULL;
-    this->tail = NULL;
+    this->head = NULL, this->tail = NULL;
     this->count = 0;
   }
 
   ~DoublyLinkedList<T>() {
-    for (int i = this->size() - 1; i >= 0; i--) {
+    for (int i = this->size() - 1; i >= 0; i--)
       this->pop(i);
-    }
   }
 
   unsigned int size() {
@@ -62,10 +59,7 @@ public:
       }
     });
 
-    if (assigned)
-      return index;
-    else
-      return -1;
+    return (assigned)? index : -1;
   }
 
   T access(unsigned int index) {
