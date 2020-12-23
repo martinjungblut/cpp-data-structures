@@ -1,5 +1,6 @@
 a.out
 nodes
+stack
 singlylinkedlist
 doublylinkedlist
-stack
+hashmap
